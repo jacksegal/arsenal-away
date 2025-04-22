@@ -42,7 +42,7 @@ class NewTicketSalesPhase extends Notification implements ShouldQueue
     {
         $teamName = $this->fixture->team;
         $salesPhaseName = $this->salesPhase->sales_phase;
-        $ticketUrl = $this->fixture->ticket_url ?? $this->fixture->arsenal_url;
+        $ticketUrl = $this->fixture->ticket_url;
         $matchDate = $this->fixture->date->format('l, j F Y - g:i A');
         
         $saleDate = 'Unknown';

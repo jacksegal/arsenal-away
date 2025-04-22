@@ -12,7 +12,6 @@ class Fixture extends Model
         'date',
         'is_home',
         'season',
-        'arsenal_url',
         'ticket_url',
         'away_points_sold_out',
         'away_allocation_tickets',

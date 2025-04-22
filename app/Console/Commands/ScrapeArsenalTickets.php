@@ -172,7 +172,7 @@ class ScrapeArsenalTickets extends Command
                 });
                 
                 // Check if this fixture already exists in our database
-                $fixture = Fixture::firstOrNew(['arsenal_url' => $ticketUrl]);
+                $fixture = Fixture::firstOrNew(['ticket_url' => $ticketUrl]);
                 
                 // Update or create the fixture
                 $fixture->fill([
@@ -181,7 +181,6 @@ class ScrapeArsenalTickets extends Command
                     'date' => $date,
                     'is_home' => false, // Always away since we're filtering for away matches
                     'season' => $season,
-                    'ticket_url' => $ticketUrl,
                 ]);
                 
                 // Only save if new or changed

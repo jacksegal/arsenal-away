@@ -44,12 +44,8 @@ class FixtureResource extends Resource
                 Forms\Components\TextInput::make('season')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('arsenal_url')
-                    ->required()
-                    ->url()
-                    ->maxLength(255)
-                    ->unique(ignoreRecord: true),
                 Forms\Components\TextInput::make('ticket_url')
+                    ->required()
                     ->url()
                     ->maxLength(255),
             ]);
