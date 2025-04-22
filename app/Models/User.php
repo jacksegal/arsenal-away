@@ -3,13 +3,15 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
 
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
@@ -68,5 +70,13 @@ class User extends Authenticatable
     public function routeNotificationForTwilio()
     {
         return $this->phone_number;
+    }
+
+    /**
+     * Determine if the user can access the Filament admin panel.
+     */
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return true; // For now, allow all authenticated users. You can add your own logic here.
     }
 }
