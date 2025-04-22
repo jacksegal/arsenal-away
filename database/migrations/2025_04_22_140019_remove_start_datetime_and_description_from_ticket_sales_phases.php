@@ -12,8 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('ticket_sales_phases', function (Blueprint $table) {
-            $table->dropColumn(['start_datetime', 'description']);
+            if (Schema::hasColumn('ticket_sales_phases', 'start_datetime')) {
+                $table->dropColumn('start_datetime');
+            }
+            if (Schema::hasColumn('ticket_sales_phases', 'description')) {
+                $table->dropColumn('description');
+            }
         });
     }
+
 
 }; 
