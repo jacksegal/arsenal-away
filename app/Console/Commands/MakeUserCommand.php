@@ -10,8 +10,8 @@ use Illuminate\Validation\ValidationException;
 
 class MakeUserCommand extends Command
 {
-    protected $signature = 'make:user';
-    protected $description = 'Create a new user interactively';
+    protected $signature = 'make:user {name?} {email?} {password?} {--phone=}';
+    protected $description = 'Create a new user (interactive if no arguments provided)';
 
     public function handle()
     {
@@ -19,17 +19,26 @@ class MakeUserCommand extends Command
         $this->newLine();
 
         // Get name
-        $name = $this->ask('What is the user\'s full name?');
-        while (empty($name)) {
-            $this->error('Name is required');
+        $name = $this->argument('name');
+        if (empty($name)) {
             $name = $this->ask('What is the user\'s full name?');
+            while (empty($name)) {
+                $this->error('Name is required');
+                $name = $this->ask('What is the user\'s full name?');
+            }
         }
 
         // Get email
-        $email = $this->ask('What is the user\'s email address?');
-        while (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $this->error('Please enter a valid email address');
+        $email = $this->argument('email');
+        if (empty($email)) {
             $email = $this->ask('What is the user\'s email address?');
+            while (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $this->error('Please enter a valid email address');
+                $email = $this->ask('What is the user\'s email address?');
+            }
+        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $this->error('Invalid email address provided');
+            return;
         }
 
         // Check if email already exists
@@ -41,14 +50,20 @@ class MakeUserCommand extends Command
         }
 
         // Get password
-        $password = $this->secret('What is the user\'s password?');
-        while (empty($password)) {
-            $this->error('Password is required');
+        $password = $this->argument('password');
+        if (empty($password)) {
             $password = $this->secret('What is the user\'s password?');
+            while (empty($password)) {
+                $this->error('Password is required');
+                $password = $this->secret('What is the user\'s password?');
+            }
         }
 
         // Get phone number
-        $phone = $this->ask('What is the user\'s phone number? (optional)');
+        $phone = $this->option('phone');
+        if (empty($phone)) {
+            $phone = $this->ask('What is the user\'s phone number? (optional)');
+        }
 
         try {
             if (User::where('email', $email)->exists()) {
