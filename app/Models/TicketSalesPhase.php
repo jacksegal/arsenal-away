@@ -13,14 +13,11 @@ class TicketSalesPhase extends Model
         'points_required',
         'sale_date',
         'sale_time',
-        'start_datetime',
-        'description',
         'notified',
     ];
 
     protected $casts = [
         'sale_date' => 'date',
-        'start_datetime' => 'datetime',
         'notified' => 'boolean',
     ];
 

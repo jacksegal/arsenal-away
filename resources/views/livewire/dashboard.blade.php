@@ -101,9 +101,7 @@
                                             
                                             <span class="text-xs mt-1">
                                                 <span class="font-semibold">Sale date:</span>
-                                                @if ($phase->start_datetime)
-                                                    {{ $phase->start_datetime->format('j M Y - g:i A') }}
-                                                @elseif ($phase->sale_date)
+                                                @if ($phase->sale_date)
                                                     {{ $phase->sale_date->format('j M Y') }}
                                                     @if ($phase->sale_time)
                                                         at {{ $phase->sale_time }}

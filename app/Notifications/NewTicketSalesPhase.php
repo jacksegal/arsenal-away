@@ -46,9 +46,7 @@ class NewTicketSalesPhase extends Notification implements ShouldQueue
         $matchDate = $this->fixture->date->format('l, j F Y - g:i A');
         
         $saleDate = 'Unknown';
-        if ($this->salesPhase->start_datetime) {
-            $saleDate = $this->salesPhase->start_datetime->format('l, j F Y - g:i A');
-        } elseif ($this->salesPhase->sale_date) {
+        if ($this->salesPhase->sale_date) {
             $saleDate = $this->salesPhase->sale_date->format('l, j F Y');
             if ($this->salesPhase->sale_time) {
                 $saleDate .= ' at ' . $this->salesPhase->sale_time;
@@ -86,9 +84,7 @@ class NewTicketSalesPhase extends Notification implements ShouldQueue
         $matchDate = $this->fixture->date->format('l, j F Y - g:i A');
         
         $saleDate = 'Unknown';
-        if ($this->salesPhase->start_datetime) {
-            $saleDate = $this->salesPhase->start_datetime->format('l, j F Y - g:i A');
-        } elseif ($this->salesPhase->sale_date) {
+        if ($this->salesPhase->sale_date) {
             $saleDate = $this->salesPhase->sale_date->format('l, j F Y');
             if ($this->salesPhase->sale_time) {
                 $saleDate .= ' at ' . $this->salesPhase->sale_time;
