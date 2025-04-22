@@ -10,10 +10,18 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "guzzlehttp/guzzle": "^7.9",
         "laravel/framework": "^12.0",
+        "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.10.1",
         "livewire/flux": "^2.1.1",
-        "livewire/volt": "^1.7.0"
+        "livewire/volt": "^1.7.0",
+        "mailgun/mailgun-php": "^4.3",
+        "symfony/css-selector": "^7.2",
+        "symfony/dom-crawler": "^7.2",
+        "symfony/http-client": "^7.2",
+        "symfony/mailgun-mailer": "^7.2",
+        "twilio/sdk": "^8.5"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
