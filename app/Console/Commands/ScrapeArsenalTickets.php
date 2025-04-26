@@ -20,7 +20,7 @@ class ScrapeArsenalTickets extends Command
      *
      * @var string
      */
-    protected $signature = 'app:scrape-arsenal-tickets {--force : Force notifications even for existing sales phases}';
+    protected $signature = 'app:scrape-arsenal-tickets';
 
     /**
      * The console command description.
@@ -239,13 +239,12 @@ class ScrapeArsenalTickets extends Command
         $crawler = new Crawler($html);
         
         $newSalesPhases = 0;
-        $forceSend = $this->option('force');
         
         // Look for "SALES PHASES" heading followed by responsive-table
         $salesPhasesHeadingFound = false;
         
         // Find all h2 elements and check if one contains "SALES PHASES"
-        $crawler->filter('h2')->each(function (Crawler $heading) use (&$salesPhasesHeadingFound, $crawler, $fixture, &$newSalesPhases, $forceSend) {
+        $crawler->filter('h2')->each(function (Crawler $heading) use (&$salesPhasesHeadingFound, $crawler, $fixture, &$newSalesPhases) {
             if (stripos($heading->text(), 'SALES PHASES') !== false) {
                 $salesPhasesHeadingFound = true;
                 
@@ -253,30 +252,30 @@ class ScrapeArsenalTickets extends Command
                 $responsiveTable = $heading->nextAll()->filter('.responsive-table')->first();
                 
                 if ($responsiveTable->count() > 0) {
-                    $this->processResponseTable($responsiveTable, $fixture, $newSalesPhases, $forceSend);
+                    $this->processResponseTable($responsiveTable, $fixture, $newSalesPhases);
                 }
             }
         });
         
         // If we didn't find the heading with "SALES PHASES", try to find any responsive-table
         if (!$salesPhasesHeadingFound) {
-            $crawler->filter('.responsive-table')->each(function (Crawler $table) use ($fixture, &$newSalesPhases, $forceSend) {
-                $this->processResponseTable($table, $fixture, $newSalesPhases, $forceSend);
+            $crawler->filter('.responsive-table')->each(function (Crawler $table) use ($fixture, &$newSalesPhases) {
+                $this->processResponseTable($table, $fixture, $newSalesPhases);
             });
         }
         
         // If we still didn't find sales phases in responsive tables, check for any tables with sales phase headers
         if ($newSalesPhases === 0) {
-            $crawler->filter('table')->each(function (Crawler $table) use ($fixture, &$newSalesPhases, $forceSend) {
+            $crawler->filter('table')->each(function (Crawler $table) use ($fixture, &$newSalesPhases) {
                 if ($table->filter('th:contains("Sales Phase"), th:contains("Who can Buy"), th:contains("Sale Date")')->count() > 0) {
-                    $this->processResponseTable($table, $fixture, $newSalesPhases, $forceSend);
+                    $this->processResponseTable($table, $fixture, $newSalesPhases);
                 }
             });
         }
         
         // Fallback: also check for ticket-list items which contain sales phases
         if ($newSalesPhases === 0) {
-            $crawler->filter('.ticket-list__item, .ticket-card .ticket-list .ticket-list__item')->each(function (Crawler $item) use ($fixture, &$newSalesPhases, $forceSend) {
+            $crawler->filter('.ticket-list__item, .ticket-card .ticket-list .ticket-list__item')->each(function (Crawler $item) use ($fixture, &$newSalesPhases) {
                 $phaseName = '';
                 $saleInfo = '';
                 
@@ -314,8 +313,7 @@ class ScrapeArsenalTickets extends Command
                             pointsRequired: null,
                             saleDate: $saleDate,
                             saleTime: $saleTime,
-                            newSalesPhases: $newSalesPhases,
-                            forceSend: $forceSend
+                            newSalesPhases: $newSalesPhases
                         );
                     } catch (\Exception $e) {
                         $this->error("Error adding sales phase: " . $e->getMessage());
@@ -333,10 +331,9 @@ class ScrapeArsenalTickets extends Command
      * @param Crawler $table
      * @param Fixture $fixture
      * @param int &$newSalesPhases
-     * @param bool $forceSend
      * @return void
      */
-    protected function processResponseTable(Crawler $table, Fixture $fixture, &$newSalesPhases, $forceSend)
+    protected function processResponseTable(Crawler $table, Fixture $fixture, &$newSalesPhases)
     {
         // Find the table and get header indexes
         $headerIndexes = [];
@@ -367,7 +364,7 @@ class ScrapeArsenalTickets extends Command
             });
             
             // Process each row for sales phases, skipping the header row
-            $table->filter('tbody tr')->slice(1)->each(function (Crawler $row) use ($headerIndexes, $fixture, &$newSalesPhases, $forceSend) {
+            $table->filter('tbody tr')->slice(1)->each(function (Crawler $row) use ($headerIndexes, $fixture, &$newSalesPhases) {
                 $cells = $row->filter('td');
                 
                 if ($cells->count() > 0) {
@@ -443,8 +440,7 @@ class ScrapeArsenalTickets extends Command
                         pointsRequired: $pointsRequired,
                         saleDate: $saleDate,
                         saleTime: $saleTime,
-                        newSalesPhases: $newSalesPhases,
-                        forceSend: $forceSend
+                        newSalesPhases: $newSalesPhases
                     );
                 }
             });
@@ -481,7 +477,6 @@ class ScrapeArsenalTickets extends Command
      * @param string|null $saleDate
      * @param string|null $saleTime
      * @param int &$newSalesPhases
-     * @param bool $forceSend
      * @return void
      */
     protected function processSalesPhase(
@@ -491,8 +486,7 @@ class ScrapeArsenalTickets extends Command
         ?string $pointsRequired,
         ?string $saleDate,
         ?string $saleTime,
-        int &$newSalesPhases,
-        bool $forceSend
+        int &$newSalesPhases
     ) {
         if (empty($name)) {
             return;
@@ -529,7 +523,7 @@ class ScrapeArsenalTickets extends Command
                 $this->info("New sales phase for {$fixture->team}: {$name}");
                 
                 // Send notification for new sales phase
-                if (!$salesPhase->notified || $forceSend) {
+                if (!$salesPhase->notified) {
                     $this->sendSalesPhaseNotification($fixture, $salesPhase);
                     $salesPhase->notified = true;
                     $salesPhase->save();
