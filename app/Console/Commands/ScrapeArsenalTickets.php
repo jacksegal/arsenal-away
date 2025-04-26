@@ -75,6 +75,7 @@ class ScrapeArsenalTickets extends Command
             foreach ($fixtures as $fixture) {
                 if ($fixture->ticket_url) {
                     $this->info("Checking sales phases for {$fixture->team} (Away)");
+                    $this->info("Checking ticket URL: {$fixture->ticket_url}");
                     $salesPhases = $this->scrapeSalesPhases($fixture);
                     $newSalesPhases += $salesPhases;
                 }
@@ -193,7 +194,7 @@ class ScrapeArsenalTickets extends Command
                         try {
                             $salesPhase = TicketSalesPhase::firstOrNew([
                                 'fixture_id' => $fixture->id,
-                                'name' => $phaseInfo['name'],
+                                'sales_phase' => $phaseInfo['name'],
                             ]);
                             
                             if (!$salesPhase->exists) {
@@ -340,9 +341,17 @@ class ScrapeArsenalTickets extends Command
         // Find the table and get header indexes
         $headerIndexes = [];
         
-        if ($table->filter('thead')->count() > 0) {
-            $table->filter('thead th')->each(function (Crawler $th, $index) use (&$headerIndexes) {
-                $headerText = strtolower(trim($th->text()));
+        // Get the first row of tbody as headers
+        $headerRow = $table->filter('tbody tr')->first();
+        
+        if ($headerRow->count() > 0) {
+            $headerRow->filter('td')->each(function (Crawler $cell, $index) use (&$headerIndexes) {
+                // Get text from strong tag if it exists, otherwise use cell text
+                $headerText = $cell->filter('strong')->count() > 0 
+                    ? $cell->filter('strong')->text() 
+                    : $cell->text();
+                
+                $headerText = strtolower(trim($headerText));
                 
                 if (stripos($headerText, 'sales phase') !== false) {
                     $headerIndexes['name'] = $index;
@@ -354,34 +363,51 @@ class ScrapeArsenalTickets extends Command
                     $headerIndexes['sale_date'] = $index;
                 } elseif (stripos($headerText, 'sale time') !== false) {
                     $headerIndexes['sale_time'] = $index;
-                } elseif (stripos($headerText, 'on sale date') !== false) {
-                    $headerIndexes['sale_date'] = $index;
                 }
             });
             
-            // Process each row for sales phases
-            $table->filter('tbody tr')->each(function (Crawler $row) use ($headerIndexes, $fixture, &$newSalesPhases, $forceSend) {
+            // Process each row for sales phases, skipping the header row
+            $table->filter('tbody tr')->slice(1)->each(function (Crawler $row) use ($headerIndexes, $fixture, &$newSalesPhases, $forceSend) {
                 $cells = $row->filter('td');
                 
                 if ($cells->count() > 0) {
-                    // Extract data based on header indexes
-                    $name = isset($headerIndexes['name']) ? $this->cleanTextContent($cells->eq($headerIndexes['name'])->text()) : null;
-                    $whoCanBuy = isset($headerIndexes['who_can_buy']) ? $this->cleanTextContent($cells->eq($headerIndexes['who_can_buy'])->text()) : null;
-                    $pointsRequired = isset($headerIndexes['points_required']) ? $this->cleanTextContent($cells->eq($headerIndexes['points_required'])->text()) : null;
-                    $saleDateText = isset($headerIndexes['sale_date']) ? $this->cleanTextContent($cells->eq($headerIndexes['sale_date'])->text()) : null;
-                    $saleTimeText = isset($headerIndexes['sale_time']) ? $this->cleanTextContent($cells->eq($headerIndexes['sale_time'])->text()) : null;
+                    // Extract data based on header indexes, getting text from strong tag if it exists
+                    $rawName = isset($headerIndexes['name']) ? ($cells->eq($headerIndexes['name'])->filter('strong')->count() > 0 
+                        ? $cells->eq($headerIndexes['name'])->filter('strong')->text() 
+                        : $cells->eq($headerIndexes['name'])->text()) : null;
                     
-                    // If name is missing, use "Phase X" where X is the row index
-                    if (empty($name)) {
-                        $name = "Phase " . ($row->getNode()->getLineNo() ?? 'Unknown');
+                    // If name is missing, skip this row
+                    if (empty($rawName)) {
+                        return;
                     }
+                    
+                    $name = $this->cleanTextContent($rawName);
+                    
+                    $whoCanBuy = isset($headerIndexes['who_can_buy']) ? $this->cleanTextContent($cells->eq($headerIndexes['who_can_buy'])->filter('strong')->count() > 0 
+                        ? $cells->eq($headerIndexes['who_can_buy'])->filter('strong')->text() 
+                        : $cells->eq($headerIndexes['who_can_buy'])->text()) : null;
+                    
+                    $pointsRequired = isset($headerIndexes['points_required']) ? $this->cleanTextContent($cells->eq($headerIndexes['points_required'])->filter('strong')->count() > 0 
+                        ? $cells->eq($headerIndexes['points_required'])->filter('strong')->text() 
+                        : $cells->eq($headerIndexes['points_required'])->text()) : null;
+                    
+                    $saleDateText = isset($headerIndexes['sale_date']) ? $this->cleanTextContent($cells->eq($headerIndexes['sale_date'])->filter('strong')->count() > 0 
+                        ? $cells->eq($headerIndexes['sale_date'])->filter('strong')->text() 
+                        : $cells->eq($headerIndexes['sale_date'])->text()) : null;
+                    
+                    $saleTimeText = isset($headerIndexes['sale_time']) ? $this->cleanTextContent($cells->eq($headerIndexes['sale_time'])->filter('strong')->count() > 0 
+                        ? $cells->eq($headerIndexes['sale_time'])->filter('strong')->text() 
+                        : $cells->eq($headerIndexes['sale_time'])->text()) : null;
                     
                     // Parse sale date
                     $saleDate = null;
                     if ($saleDateText) {
+                        // Remove all types of whitespace including non-breaking spaces
+                        $saleDateText = preg_replace('/[\s\x{00A0}\x{2000}-\x{200A}\x{202F}\x{205F}\x{3000}]+/u', '', $saleDateText);
+                        
                         try {
                             // First try DD/MM/YYYY format explicitly
-                            if (preg_match('/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/', trim($saleDateText), $matches)) {
+                            if (preg_match('/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/', $saleDateText, $matches)) {
                                 $saleDate = Carbon::createFromFormat('d/m/Y', $saleDateText)->toDateString();
                             } else {
                                 // Fallback to Carbon's parse
@@ -471,6 +497,13 @@ class ScrapeArsenalTickets extends Command
         if (empty($name)) {
             return;
         }
+        
+        $this->info("Processing sales phase for fixture {$fixture->id}:");
+        $this->info("Name: {$name}");
+        $this->info("Who can buy: {$whoCanBuy}");
+        $this->info("Points required: {$pointsRequired}");
+        $this->info("Sale date: {$saleDate}");
+        $this->info("Sale time: {$saleTime}");
         
         // Create or update the sales phase
         $salesPhase = TicketSalesPhase::firstOrNew([
