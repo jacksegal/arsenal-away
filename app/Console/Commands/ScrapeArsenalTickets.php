@@ -380,11 +380,11 @@ class ScrapeArsenalTickets extends Command
                     $saleDate = null;
                     if ($saleDateText) {
                         try {
-                            // Try various date formats (DD/MM/YYYY, YYYY-MM-DD, etc.)
-                            if (preg_match('/(\d{1,2})\/(\d{1,2})\/(\d{4})/', $saleDateText, $matches)) {
-                                // DD/MM/YYYY format
+                            // First try DD/MM/YYYY format explicitly
+                            if (preg_match('/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/', trim($saleDateText), $matches)) {
                                 $saleDate = Carbon::createFromFormat('d/m/Y', $saleDateText)->toDateString();
                             } else {
+                                // Fallback to Carbon's parse
                                 $saleDate = Carbon::parse($saleDateText)->toDateString();
                             }
                         } catch (\Exception $e) {
