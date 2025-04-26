@@ -514,6 +514,12 @@ class ScrapeArsenalTickets extends Command
      */
     protected function sendSalesPhaseNotification(Fixture $fixture, TicketSalesPhase $salesPhase)
     {
+        // Check if notifications are enabled via environment variable
+        if (!env('SEND_TICKET_NOTIFICATIONS', true)) {
+            $this->info("Notifications are disabled via SEND_TICKET_NOTIFICATIONS environment variable");
+            return;
+        }
+
         $this->info("Sending notification for {$fixture->team} - {$salesPhase->name}");
         
         try {
