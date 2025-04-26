@@ -10,5 +10,4 @@ Artisan::command('inspire', function () {
 
 // Define the application's command schedule
 Schedule::command('app:scrape-arsenal-tickets')
-    ->everyMinute()
-    ->appendOutputTo(storage_path('logs/arsenal-scraper.log'));
+    ->everyMinute();
