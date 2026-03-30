@@ -173,22 +173,48 @@ Tracks Arsenal away fixture ticket information — how many away points you need
 - **Three enums**: `Season`, `Competition`, `Opposition` in `app/Enums/` — all backed string enums. Add new cases as needed (e.g. new promoted teams each season).
 - **Filament 5 admin** at `/admin` — resource at `app/Filament/Resources/Fixtures/`
 - **Livewire 4 frontend** at `/` — component at `app/Livewire/FixtureTable.php`
-- **Import command**: `php artisan app:import-fixtures` — imports PL away fixtures from CSV. Handles UTC conversion and team name normalisation.
+- **Import commands**:
+  - `php artisan app:import-fixtures` — PL away fixtures from fixturedownload.com CSVs
+  - `php artisan app:import-away-points` — ticket sale data from Google Sheets CSVs
+  - `php artisan app:import-cup-fixtures` — cup/European fixtures from Google Sheets CSVs
 
 ## Data Notes
 
 - Fixtures are uniquely identified by `season + opposition + competition` (used in `updateOrCreate`)
-- Ticket sale info (starting_sale_points, sell_out_points, allocation, arsenal_ticket_link) is managed manually via Filament, not imported from CSV
-- The `game_week` field uses format `GW1`, `GW2`, etc. for PL; `R16`, `QF`, `SF`, `R3` etc. for cups
+- Ticket sale info (starting_sale_points, sell_out_points, allocation) imported from Google Sheets CSVs or managed via Filament
+- The `game_week` field uses: `GW1`-`GW38` for PL, `MD1`-`MD8` for CL league phase, `R16`/`QF`/`SF` for knockouts, `R3`-`R5` for early cup rounds
 - Opposition enum uses short display names matching Arsenal ticket office conventions (e.g. "Nott'm Forest" not "Nottingham Forest")
+- Opposition enum has `opponentKey()` method returning the arsenal.com URL slug for each team
+
+## Arsenal Ticket Links
+
+URL format: `https://www.arsenal.com/tickets/arsenal/{YYYY-Mon-DD}/{opponent-key}`
+- Example: `https://www.arsenal.com/tickets/arsenal/2025-Sep-16/athletic-club`
+- To find a link: search "Arsenal vs {opponent} AWAY TICKETS" and look for arsenal.com result
+- **Always verify**: (1) it's an AWAY match (not home), (2) correct opponent, (3) correct competition/season
+- Some opponent keys on arsenal.com differ from what you'd expect:
+  - Atalanta → `atalanta-bergamasca-calcio`
+  - Athletic Bilbao → `athletic-club`
+  - Slavia Prague → `sk-slavia-praha`
+  - Club Brugge → `club-brugge-kv`
+  - Real Madrid → `real-madrid-cf`
+  - PSG → `paris-saint-germain-fc`
+  - Sporting CP → `sporting-clube-de-portugal`
+- Historical PL links may use different slugs than current ones (e.g. Brighton was `brighton` before `brighton-hove-albion`)
+- The `Opposition::opponentKey()` method stores the most recent/current slug
 
 ## Data Sources
 
 - **PL fixtures CSV**: https://fixturedownload.com/results/epl-2025 — download "Arsenal" CSV in GMT Standard Time. Change year in URL for other seasons.
-- **Ticket sale info**: Entered manually via Filament admin.
+- **Ticket sale data**: Google Sheets "Away Points Calculator" exports — one per season, inconsistent formats handled by `app:import-away-points`.
+- **Cup/European data**: Google Sheets "Away Points Calculator - Allocation" exports — Cups and Europe CSVs handled by `app:import-cup-fixtures`.
+- **Fixture dates for cups/CL**: No single CSV source. Dates researched via web search ("Arsenal vs {opponent} away tickets") and hard-coded in `ImportCupFixtures.php` lookup table.
 
 ## When Adding a New Season
 
 1. Add a new case to `app/Enums/Season.php`
-2. Add any newly promoted teams to `app/Enums/Opposition.php`
-3. Import fixtures: `php artisan app:import-fixtures /path/to/csv`
+2. Add any newly promoted teams to `app/Enums/Opposition.php` (with `opponentKey()`)
+3. Import PL fixtures: `php artisan app:import-fixtures /path/to/csv`
+4. Import ticket sale data: `php artisan app:import-away-points /path/to/csv`
+5. For cup/European fixtures: add date/round entries to `ImportCupFixtures.php` lookup table, then run `php artisan app:import-cup-fixtures`
+6. Find arsenal.com ticket links by searching "Arsenal vs {opponent} AWAY TICKETS"
