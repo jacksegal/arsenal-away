@@ -3,4 +3,4 @@
 use App\Livewire\FixtureTable;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', FixtureTable::class)->name('home');
+Route::livewire('/', FixtureTable::class)->name('home');
