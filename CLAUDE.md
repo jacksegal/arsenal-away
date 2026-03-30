@@ -160,3 +160,30 @@ This project has domain-specific skills available. You MUST activate the relevan
 - Do NOT delete tests without approval.
 
 </laravel-boost-guidelines>
+
+# Arsenal Away — Project Context
+
+## What This App Does
+
+Tracks Arsenal away fixture ticket information — how many away points you need to buy tickets, allocations, sell-out thresholds. Data was previously in Google Sheets and is being migrated here.
+
+## Architecture
+
+- **Single model**: `Fixture` — the core of the app
+- **Three enums**: `Season`, `Competition`, `Opposition` in `app/Enums/` — all backed string enums. Add new cases as needed (e.g. new promoted teams each season).
+- **Filament 5 admin** at `/admin` — resource at `app/Filament/Resources/Fixtures/`
+- **Livewire 4 frontend** at `/` — component at `app/Livewire/FixtureTable.php`
+- **Import command**: `php artisan app:import-fixtures` — imports PL away fixtures from CSV. Handles UTC conversion and team name normalisation.
+
+## Data Notes
+
+- Fixtures are uniquely identified by `season + opposition + competition` (used in `updateOrCreate`)
+- Ticket sale info (starting_sale_points, sell_out_points, allocation, arsenal_ticket_link) is managed manually via Filament, not imported from CSV
+- The `game_week` field uses format `GW1`, `GW2`, etc. for PL; `R16`, `QF`, `SF`, `R3` etc. for cups
+- Opposition enum uses short display names matching Arsenal ticket office conventions (e.g. "Nott'm Forest" not "Nottingham Forest")
+
+## When Adding a New Season
+
+1. Add a new case to `app/Enums/Season.php`
+2. Add any newly promoted teams to `app/Enums/Opposition.php`
+3. Import fixtures: `php artisan app:import-fixtures /path/to/csv`
