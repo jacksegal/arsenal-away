@@ -182,6 +182,11 @@ Tracks Arsenal away fixture ticket information — how many away points you need
 - The `game_week` field uses format `GW1`, `GW2`, etc. for PL; `R16`, `QF`, `SF`, `R3` etc. for cups
 - Opposition enum uses short display names matching Arsenal ticket office conventions (e.g. "Nott'm Forest" not "Nottingham Forest")
 
+## Data Sources
+
+- **PL fixtures CSV**: https://fixturedownload.com/results/epl-2025 — download "Arsenal" CSV in GMT Standard Time. Change year in URL for other seasons.
+- **Ticket sale info**: Entered manually via Filament admin.
+
 ## When Adding a New Season
 
 1. Add a new case to `app/Enums/Season.php`

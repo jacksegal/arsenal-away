@@ -68,6 +68,11 @@ The core model is `Fixture` with three enum-backed fields:
 
 Other fields: allocation, fixture_date, starting_sale_points, sell_out_points, arsenal_ticket_link, game_week, notes.
 
+## Data Sources
+
+- **Premier League fixtures**: [fixturedownload.com](https://fixturedownload.com/results/epl-2025) — download the "Arsenal" CSV in GMT Standard Time. Change the year in the URL for other seasons (e.g. `epl-2024`, `epl-2023`).
+- **Ticket sale info**: Manually entered via the Filament admin panel.
+
 ## Testing
 
 ```bash
