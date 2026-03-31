@@ -18,7 +18,7 @@ class FixtureTable extends Component
 
     public string $sortBy = 'fixture_date';
 
-    public string $sortDirection = 'asc';
+    public string $sortDirection = 'desc';
 
     public function sort(string $column): void
     {
