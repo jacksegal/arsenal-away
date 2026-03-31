@@ -60,11 +60,11 @@
                     @endif
                     @if (in_array('competition', $columns))
                         <flux:table.cell>
-                            <flux:badge size="sm" :color="match($fixture->competition) {
-                                \App\Enums\Competition::PremierLeague => 'purple',
-                                \App\Enums\Competition::ChampionsLeague => 'blue',
-                                \App\Enums\Competition::FaCup => 'red',
-                                \App\Enums\Competition::CarabaoCup => 'green',
+                            <flux:badge size="sm" variant="solid" :class="match($fixture->competition) {
+                                \App\Enums\Competition::PremierLeague => 'bg-[#37003c]!',
+                                \App\Enums\Competition::ChampionsLeague => 'bg-[#032FF2]!',
+                                \App\Enums\Competition::FaCup => 'bg-[#D91821]!',
+                                \App\Enums\Competition::CarabaoCup => 'bg-[#36A559]!',
                             }">{{ $fixture->competition->value }}</flux:badge>
                         </flux:table.cell>
                     @endif
