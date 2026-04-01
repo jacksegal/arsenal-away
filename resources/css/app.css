@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
 @import 'tailwindcss';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -6,6 +7,137 @@
 @source '../**/*.js';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Share Tech Mono', monospace;
+    --font-mono: 'Share Tech Mono', monospace;
+
+    --color-accent: #00FFFF;
+    --color-accent-content: #00FFFF;
+    --color-accent-foreground: #000000;
+
+    --color-ceefax-red: #FF3333;
+    --color-ceefax-green: #00FF00;
+    --color-ceefax-yellow: #FFD700;
+    --color-ceefax-blue: #3333FF;
+    --color-ceefax-magenta: #FF00FF;
+    --color-ceefax-cyan: #00FFFF;
+    --color-ceefax-white: #FFFFFF;
+    --color-ceefax-bg-1: #111111;
+    --color-ceefax-bg-2: #1a1a1a;
+    --color-ceefax-bg-3: #222222;
+    --color-ceefax-border: #333333;
+}
+
+@layer theme {
+    .dark {
+        --color-accent: #00FFFF;
+        --color-accent-content: #00FFFF;
+        --color-accent-foreground: #000000;
+    }
+}
+
+@layer base {
+    body {
+        background: #111111;
+        color: #FFFFFF;
+    }
+}
+
+/* Ceefax blink animation */
+@keyframes ceefax-blink {
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0; }
+}
+.ceefax-blink {
+    animation: ceefax-blink 1s step-end infinite;
+}
+
+/* CRT scanline overlay */
+body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.12) 0px,
+        rgba(0, 0, 0, 0.12) 1px,
+        transparent 1px,
+        transparent 3px
+    );
+}
+
+/* CRT vignette */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 60%, rgba(0, 0, 0, 0.4) 100%);
+}
+
+/* --- Flux component overrides --- */
+
+/* Remove all rounded corners */
+[data-flux-button],
+[data-flux-badge],
+[data-flux-select] button,
+[data-flux-table] {
+    @apply rounded-none!;
+}
+
+/* Select dropdown panel */
+[data-flux-select] [role="listbox"] {
+    @apply rounded-none! bg-ceefax-bg-2! border-ceefax-border!;
+}
+
+[data-flux-select] [role="option"] {
+    @apply rounded-none! text-ceefax-white!;
+}
+
+[data-flux-select] [role="option"][data-active] {
+    @apply bg-ceefax-bg-3! text-ceefax-cyan!;
+}
+
+[data-flux-select] [role="option"][aria-selected="true"] {
+    @apply text-ceefax-yellow!;
+}
+
+/* Select trigger button */
+[data-flux-select] button {
+    @apply bg-ceefax-bg-2! border-ceefax-border! text-ceefax-white!;
+}
+
+/* Table headers */
+[data-flux-column] {
+    @apply text-ceefax-yellow! border-ceefax-border!;
+}
+
+[data-flux-columns] {
+    @apply border-ceefax-yellow!;
+}
+
+/* Table rows */
+[data-flux-row] {
+    @apply border-ceefax-border! bg-ceefax-bg-1!;
+}
+
+[data-flux-row]:hover {
+    @apply bg-ceefax-bg-2!;
+}
+
+/* Table cells */
+[data-flux-cell] {
+    @apply text-ceefax-white!;
+}
+
+/* Badge */
+[data-flux-badge] {
+    @apply rounded-none! font-bold!;
+}
+
+/* Label overrides */
+[data-flux-label] {
+    @apply text-ceefax-yellow!;
 }

@@ -1,5 +1,7 @@
 <div>
-    <div class="mb-6 flex flex-wrap items-end gap-4">
+    <div class="text-ceefax-green text-sm mb-3">P302 ARSENAL AWAY FIXTURES</div>
+
+    <div class="mb-4 flex flex-wrap items-end gap-4">
         <flux:select variant="listbox" multiple wire:model.live="season" label="Season" placeholder="All Seasons" class="w-56">
             @foreach ($seasons as $s)
                 <flux:select.option value="{{ $s->value }}">{{ $s->value }}</flux:select.option>
@@ -22,7 +24,11 @@
             <flux:select.option value="sell_out_points">Points Sell Out</flux:select.option>
             <flux:select.option value="tickets">Tickets</flux:select.option>
         </flux:select>
+
+        <span wire:loading class="text-ceefax-yellow ceefax-blink text-xs self-center">Searching...</span>
     </div>
+
+    <div class="border-t border-ceefax-cyan/40 mb-4"></div>
 
     <flux:table>
         <flux:table.columns>
@@ -56,15 +62,15 @@
             @forelse ($fixtures as $fixture)
                 <flux:table.row :key="$fixture->id">
                     @if (in_array('opposition', $columns))
-                        <flux:table.cell class="font-medium">{{ $fixture->opposition->value }}</flux:table.cell>
+                        <flux:table.cell class="font-bold text-ceefax-white!">{{ $fixture->opposition->value }}</flux:table.cell>
                     @endif
                     @if (in_array('competition', $columns))
                         <flux:table.cell>
                             <flux:badge size="sm" variant="solid" :class="match($fixture->competition) {
-                                \App\Enums\Competition::PremierLeague => 'bg-[#37003c]!',
-                                \App\Enums\Competition::ChampionsLeague => 'bg-[#032FF2]!',
-                                \App\Enums\Competition::FaCup => 'bg-[#D91821]!',
-                                \App\Enums\Competition::CarabaoCup => 'bg-[#36A559]!',
+                                \App\Enums\Competition::PremierLeague => 'bg-ceefax-magenta! text-black!',
+                                \App\Enums\Competition::ChampionsLeague => 'bg-ceefax-cyan! text-black!',
+                                \App\Enums\Competition::FaCup => 'bg-ceefax-red! text-black!',
+                                \App\Enums\Competition::CarabaoCup => 'bg-ceefax-green! text-black!',
                             }">{{ $fixture->competition->value }}</flux:badge>
                         </flux:table.cell>
                     @endif
@@ -86,16 +92,18 @@
                     @if (in_array('tickets', $columns))
                         <flux:table.cell>
                             @if ($fixture->arsenal_ticket_link)
-                                <flux:button variant="ghost" size="xs" icon="ticket" href="{{ $fixture->arsenal_ticket_link }}" target="_blank" />
+                                <a href="{{ $fixture->arsenal_ticket_link }}" target="_blank" class="text-ceefax-cyan hover:text-ceefax-yellow no-underline text-xs">
+                                    TICKETS &gt;&gt;&gt;
+                                </a>
                             @else
-                                -
+                                <span class="text-ceefax-border">-</span>
                             @endif
                         </flux:table.cell>
                     @endif
                 </flux:table.row>
             @empty
                 <flux:table.row>
-                    <flux:table.cell :colspan="count($columns)" class="text-center">No fixtures found.</flux:table.cell>
+                    <flux:table.cell :colspan="count($columns)" class="text-center text-ceefax-yellow!">No fixtures found.</flux:table.cell>
                 </flux:table.row>
             @endforelse
         </flux:table.rows>

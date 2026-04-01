@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,21 +7,20 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @fluxAppearance
 </head>
-<body class="min-h-screen bg-white dark:bg-zinc-800">
-    <flux:header class="border-b border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
-        <flux:brand href="/" name="Arsenal Away" class="font-bold" />
+<body class="min-h-screen flex flex-col bg-ceefax-bg-1 text-ceefax-white font-mono">
+    <header class="bg-ceefax-blue flex items-center justify-between px-4 py-1 text-xs">
+        <span class="text-ceefax-yellow">P302</span>
+        <a href="/" class="text-ceefax-yellow font-bold tracking-[4px] text-lg no-underline">FOLLOW ARSENAL AWAY</a>
+    </header>
 
-        <flux:spacer />
-
-        <flux:navbar>
-            <flux:navbar.item href="/" icon="table-cells" current>Fixtures</flux:navbar.item>
-            <flux:navbar.item href="/admin" icon="cog-6-tooth">Admin</flux:navbar.item>
-        </flux:navbar>
-    </flux:header>
-
-    <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <main class="flex-1 px-4 py-3">
         {{ $slot }}
     </main>
+
+    <footer class="bg-ceefax-blue px-4 py-1 flex justify-between text-xs mt-auto">
+        <span class="text-ceefax-yellow tracking-wider">Arsenal Away Fixtures</span>
+        <a href="/admin" class="text-ceefax-cyan no-underline">Admin P900</a>
+    </footer>
 
     @fluxScripts
 </body>
